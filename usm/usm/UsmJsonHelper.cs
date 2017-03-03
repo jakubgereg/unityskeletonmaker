@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -11,7 +12,12 @@ namespace usm
     /// </summary>
     public static class UsmJsonHelper
     {
-        private static string UsmJsonVersion = "0.1";
+        /*Default usm.json path*/
+        public const string FileName = "usm.json";
+        private const string DefaultJsonFolder = "default-usm-json";
+
+        /*New usm.json*/
+        private static string _usmJsonVersion = "0.1";
         public static void CreateNewEmptyUsm()
         {
             var author = new ProjectSettings.Author
@@ -24,7 +30,7 @@ namespace usm
             var projectSettings = new ProjectSettings
             {
                 GameName = "Skeleton Game",
-                Description = $"This is description created in Unity Skeleton Maker v{UsmJsonVersion}",
+                Description = $"This is description created in Unity Skeleton Maker v{_usmJsonVersion}",
                 Url = "https://github.com/wramp",
                 ImageUrl = "https://media.giphy.com/media/MX9r4jOTStUeA/giphy.gif",
                 Authors = new List<ProjectSettings.Author> { author }
@@ -33,7 +39,7 @@ namespace usm
 
             var model = new UsmJsonModel
             {
-                UsmJsonVersion = UsmJsonVersion,
+                UsmJsonVersion = _usmJsonVersion,
                 ProjectSettings = projectSettings
             };
             /*Add other settings if model changes*/
@@ -42,6 +48,15 @@ namespace usm
 
             var result = JsonConvert.SerializeObject(model);
             File.WriteAllText("ResultFromHelper.txt", result);
+        }
+
+        public static string GetDefaultUsmpath()
+        {
+            var appPath = AppDomain.CurrentDomain.BaseDirectory;
+            var defaultUsmFolder = Path.Combine(appPath, DefaultJsonFolder);
+            var usmFilePath = Path.Combine(defaultUsmFolder, FileName);
+
+            return usmFilePath;
         }
     }
 }
