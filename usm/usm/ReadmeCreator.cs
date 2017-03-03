@@ -7,27 +7,27 @@ namespace usm
     {
         private const string ReadmeFileName = "README.md";
 
-        public static void CreateReadme(string gameName, string description, string url, string image, List<Author> authors)
+        public static void CreateReadme(string filepath, ProjectSettings settings)
         {
             var lines = new List<string>();
 
-            lines.Add($"# **{gameName}**");
-            if (description != null) lines.Add($"{description}   ");
-            if (url != null) lines.Add($"[{url}]({url})   ");
-            if (image != null) lines.Add($"![{gameName}]({image})   ");
+            lines.Add($"# **{settings.GameName}**");
+            if (settings.Description != null) lines.Add($"{settings.Description}   ");
+            if (settings.Url != null) lines.Add($"[{settings.Url}]({settings.Url})   ");
+            if (settings.ImageUrl != null) lines.Add($"![{settings.GameName}]({settings.ImageUrl})   ");
 
             lines.Add(string.Empty);
 
-            if (authors != null)
+            if (settings.Authors != null)
             {
-                lines.AddRange(CreateAuthorSection(authors));
+                lines.AddRange(CreateAuthorSection(settings.Authors));
             }
 
 
-            WriteToFile(lines.ToArray());
+            WriteToFile(filepath, lines.ToArray());
         }
 
-        private static List<string> CreateAuthorSection(List<Author> authors)
+        private static List<string> CreateAuthorSection(List<ProjectSettings.Author> authors)
         {
             var result = new List<string>();
             result.Add("Authors");
@@ -40,9 +40,9 @@ namespace usm
             return result;
         }
 
-        private static void WriteToFile(string[] lines)
+        private static void WriteToFile(string dirlocation, string[] lines)
         {
-            using (var file = new StreamWriter(ReadmeFileName))
+            using (var file = new StreamWriter(Path.Combine(dirlocation, ReadmeFileName)))
             {
                 foreach (string line in lines)
                 {
@@ -56,10 +56,5 @@ namespace usm
         }
     }
 
-    public class Author
-    {
-        public string Name { get; set; }
-        public string NickName { get; set; }
-        public string WebSiteUrl { get; set; }
-    }
+
 }
