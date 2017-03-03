@@ -1,0 +1,16 @@
+{
+  "UsmJsonVersion": "0.1",
+  "ProjectSettings": {
+    "GameName": "Skeleton Game",
+    "Description": "This is description created in Unity Skeleton Maker v0.1",
+    "Url": "https://github.com/wramp",
+    "ImageUrl": "https://media.giphy.com/media/MX9r4jOTStUeA/giphy.gif",
+    "Authors": [
+      {
+        "Name": "Jakub Gereg",
+        "NickName": "wramp",
+        "WebSiteUrl": "https://github.com/wramp"
+      }
+    ]
+  }
+}
