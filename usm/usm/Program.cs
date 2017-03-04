@@ -26,7 +26,7 @@ namespace usm
             if (File.Exists(projectusmpath))
             {
                 var projusm = ReadProjectUsm(projectusmpath);
-                ExtractPackage("skeleton-unityemptygame", projectbasedir, projusm);
+                ExtractPackage("unityemptygame", projectbasedir, projusm);
 
                 Console.WriteLine("Thanks for using Unity Skeleton Maker!");
             }
@@ -59,7 +59,7 @@ namespace usm
                 if (File.Exists(projectusmpath))
                 {
                     var projusm = ReadProjectUsm(projectusmpath);
-                    ExtractPackage("skeleton-unityemptygame", projectbasedir, projusm);
+                    ExtractPackage("unityemptygame", projectbasedir, projusm);
 
                     Console.WriteLine();
                     Console.WriteLine("Thanks for using Unity Skeleton Maker!");
@@ -100,14 +100,15 @@ namespace usm
             Console.WriteLine("---------------");
             Console.WriteLine("[Y/N]?");
 
+            packagename = packagename + ".zip";
             ConsoleKeyInfo answer = Console.ReadKey();
             switch (answer.Key)
             {
                 case ConsoleKey.Y:
                     var appPath = AppDomain.CurrentDomain.BaseDirectory;
-                    var cb = Path.Combine(appPath, packagename);
-                    var rb = Path.Combine(cb, "default.zip");
-                    ZipFile.ExtractToDirectory(rb, projectbasedir);
+                    var mb = Path.Combine(appPath, "skeletons");
+                    var cb = Path.Combine(mb, packagename);
+                    ZipFile.ExtractToDirectory(cb, projectbasedir);
                     ReadmeCreator.CreateReadme(projectbasedir, projectUsm.ProjectSettings);
                     break;
 
