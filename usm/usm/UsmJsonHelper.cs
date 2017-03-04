@@ -15,6 +15,7 @@ namespace usm
         /*Default usm.json path*/
         public const string FileName = "usm.json";
         private const string DefaultJsonFolder = "default-usm-json";
+        private const string DefaultSkeletonsFolderName = "skeletons";
 
         /*New usm.json*/
         private static string _usmJsonVersion = "0.1";
@@ -57,6 +58,13 @@ namespace usm
             var usmFilePath = Path.Combine(defaultUsmFolder, FileName);
 
             return usmFilePath;
+        }
+
+        public static string GetSkeletonsFolderPath()
+        {
+            var appPath = AppDomain.CurrentDomain.BaseDirectory;
+
+            return Path.Combine(appPath, DefaultSkeletonsFolderName);
         }
     }
 }
