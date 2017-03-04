@@ -56,6 +56,7 @@
     <Compile Include="ReadmeCreator.cs" />
     <Compile Include="UsmJsonHelper.cs" />
     <Compile Include="UsmJsonModel.cs" />
+    <Compile Include="UsmPackageHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -63,7 +64,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="skeleton-unityemptygame\default.zip">
+    <None Include="skeletons\unityemptygame.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
