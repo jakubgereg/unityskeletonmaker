@@ -9,8 +9,30 @@ namespace usm
     class Program
     {
         static bool again;
-        static void Main(string[] args)
+        static void Main()
         {
+            Console.WriteLine("What you want to do?");
+            Console.WriteLine("-----");
+            Console.WriteLine("1. Create Skeleton from existing package");
+            Console.WriteLine("2. Create Package from existing folder");
+
+            ConsoleKeyInfo selected = Console.ReadKey();
+
+            switch (selected.Key)
+            {
+                case ConsoleKey.D1:
+                    CreateSkeletonOption();
+                    break;
+
+                case ConsoleKey.D2:
+                    CreatePackageOption();
+                    break;
+            }
+        }
+
+        static void CreateSkeletonOption()
+        {
+            Console.Clear();
             Console.WriteLine("Select path to create skeleton [dest]:");
             var projectbasedir = Console.ReadLine();
 
@@ -26,9 +48,26 @@ namespace usm
             if (File.Exists(projectusmpath))
             {
                 var projusm = ReadProjectUsm(projectusmpath);
-                ExtractPackage("skeleton-unityemptygame", projectbasedir, projusm);
+                var skeletons = UsmPackageHelper.GetAllSkeletonsAvailiable();
+                int i = 0;
+                Console.WriteLine("Availiable Packages:");
+                Console.WriteLine("-------------");
 
-                Console.WriteLine("Thanks for using Unity Skeleton Maker!");
+                foreach (var skeleton in skeletons)
+                {
+                    i++;
+                    Console.WriteLine($"{i}." + skeleton.Name.Replace(".zip", ""));
+                }
+
+                Console.WriteLine("Select package number:");
+                var num = Console.ReadLine();
+
+                int numero = int.Parse(num);
+                var k = skeletons[numero - 1];
+
+                ExtractPackage(k.Name.Replace(".zip", ""), projectbasedir, projusm);
+
+
             }
             else
             {
@@ -41,7 +80,6 @@ namespace usm
                         File.Copy(defaultusmjsonpath, projectusmpath);
                         again = true;
                         Console.ReadKey();
-
                         break;
 
                     default:
@@ -59,7 +97,7 @@ namespace usm
                 if (File.Exists(projectusmpath))
                 {
                     var projusm = ReadProjectUsm(projectusmpath);
-                    ExtractPackage("skeleton-unityemptygame", projectbasedir, projusm);
+                    ExtractPackage("unityemptygame", projectbasedir, projusm);
 
                     Console.WriteLine();
                     Console.WriteLine("Thanks for using Unity Skeleton Maker!");
@@ -69,9 +107,20 @@ namespace usm
                     Environment.Exit(0);
                 }
             }
-            //ReadJSON
-
             Console.ReadKey();
+        }
+
+        static void CreatePackageOption()
+        {
+            Console.Clear();
+            Console.WriteLine("Select directory you want to convert to skeleton:");
+            var path = Console.ReadLine();
+            Console.WriteLine("Name of your skeleton package ?");
+            var name = Console.ReadLine();
+            UsmPackageHelper.ConvertToSkeleton(path, name);
+
+
+            Console.WriteLine("Thanks for using Unity Skeleton Maker!");
         }
 
         static string GetProjectUsmPathFromBase(string projectbasedir)
@@ -100,14 +149,15 @@ namespace usm
             Console.WriteLine("---------------");
             Console.WriteLine("[Y/N]?");
 
+            packagename = packagename + ".zip";
             ConsoleKeyInfo answer = Console.ReadKey();
             switch (answer.Key)
             {
                 case ConsoleKey.Y:
                     var appPath = AppDomain.CurrentDomain.BaseDirectory;
-                    var cb = Path.Combine(appPath, packagename);
-                    var rb = Path.Combine(cb, "default.zip");
-                    ZipFile.ExtractToDirectory(rb, projectbasedir);
+                    var mb = Path.Combine(appPath, "skeletons");
+                    var cb = Path.Combine(mb, packagename);
+                    ZipFile.ExtractToDirectory(cb, projectbasedir);
                     ReadmeCreator.CreateReadme(projectbasedir, projectUsm.ProjectSettings);
                     break;
 
