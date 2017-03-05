@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace usm
+namespace usmcore
 {
     /// <summary>
     /// This model shown how usm.json shoulld looks like

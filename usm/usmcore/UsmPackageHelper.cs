@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
-namespace usm
+namespace usmcore
 {
     public static class UsmPackageHelper
     {
@@ -11,10 +11,11 @@ namespace usm
         /// <summary>
         /// Convert to package, addes .gitkeep files in empty directories
         /// </summary>
-        public static void ConvertToSkeleton(string dir, string mycustompackage)
+        public static void ConvertToSkeleton(string dir, string mycustompackage, Action<string> callback = null)
         {
-            Console.WriteLine($"Converting folder to skeleton {mycustompackage}");
-            String[] alldirectories = Directory.GetDirectories(dir, "*.*", SearchOption.AllDirectories);
+            callback?.Invoke($"Converting folder to skeleton {mycustompackage}");
+
+            var alldirectories = Directory.GetDirectories(dir, "*.*", SearchOption.AllDirectories);
             foreach (var dire in alldirectories)
             {
                 DirectoryInfo info = new DirectoryInfo(dire);
@@ -22,22 +23,19 @@ namespace usm
 
                 //ignore all .git folders
                 if (info.FullName.Contains(".git")) continue;
-
-
                 var numberOfFilesInside = NumberOfFilesInDirectory(info.FullName);
                 //Console.WriteLine($"{info.Name}({numberOfFilesInside})");
 
                 if (numberOfFilesInside != 0) continue;
                 AddGitKeepFile(info.FullName);
 
-                Console.WriteLine($".gitkeep created for directory {info.Name}.");
+
+                callback?.Invoke($".gitkeep created for directory {info.Name}.");
             }
 
-            Console.WriteLine("All files prepared!");
+            callback?.Invoke("All files prepared!");
 
-            CompressAllFiles(dir, mycustompackage);
-
-            Console.WriteLine($"Package {mycustompackage} created!");
+            CompressAllFiles(dir, mycustompackage, callback);
         }
 
         private static int NumberOfFilesInDirectory(string dir)
@@ -49,16 +47,24 @@ namespace usm
 
         private static void AddGitKeepFile(string dirpath)
         {
-            File.Create(Path.Combine(dirpath, ".gitkeep"), 1);
+            File.Create(Path.Combine(dirpath, ".gitkeep"), 1).Close();
         }
 
-        private static void CompressAllFiles(string path, string mypackagename)
+        private static void CompressAllFiles(string path, string mypackagename, Action<string> callback = null)
         {
             var packageFileName = mypackagename + ".zip";
             var skeletonsDirectory = UsmJsonHelper.GetSkeletonsFolderPath();
             var newPath = Path.Combine(skeletonsDirectory, packageFileName);
 
-            ZipFile.CreateFromDirectory(path, newPath);
+            try
+            {
+                ZipFile.CreateFromDirectory(path, newPath);
+                callback?.Invoke($"Package {mypackagename} was created!");
+            }
+            catch (Exception ex)
+            {
+                callback?.Invoke(ex.Message);
+            }
         }
 
         public static List<FileInfo> GetAllSkeletonsAvailiable()

@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
-namespace usm
+namespace usmcore
 {
     public static class ReadmeCreator
     {
         private const string ReadmeFileName = "README.md";
 
-        public static void CreateReadme(string filepath, ProjectSettings settings)
+        public static void CreateReadme(string filepath, ProjectSettings settings, Action<string> callback = null)
         {
             var lines = new List<string>();
 
@@ -23,8 +24,17 @@ namespace usm
                 lines.AddRange(CreateAuthorSection(settings.Authors));
             }
 
+            try
+            {
+                WriteToFile(filepath, lines.ToArray());
+                callback?.Invoke("Readme file created!");
+            }
+            catch (Exception ex)
+            {
+                callback?.Invoke(ex.Message);
+            }
 
-            WriteToFile(filepath, lines.ToArray());
+
         }
 
         private static List<string> CreateAuthorSection(List<ProjectSettings.Author> authors)
