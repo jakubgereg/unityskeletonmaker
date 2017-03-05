@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
-namespace usm
+namespace usmcore
 {
     public static class UsmPackageHelper
     {
