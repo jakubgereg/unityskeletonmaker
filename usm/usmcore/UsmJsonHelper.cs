@@ -74,9 +74,21 @@ namespace usmcore
 
         /* Method used in project */
 
+        public static bool IsProjectGitRepo(string projectPath)
+        {
+            return Directory.Exists(Path.Combine(projectPath, ".git"));
+        }
+
         public static bool IsProjectUsmExists(string projectPath)
         {
             return File.Exists(GetProjectUsmpath(projectPath));
+        }
+
+        public static void InitializeNewUsmJson(string projectPath)
+        {
+            var defaultusmjsonpath = GetDefaultUsmpath();
+            var projectusmpath = GetProjectUsmpath(projectPath);
+            File.Copy(defaultusmjsonpath, projectusmpath);
         }
 
         public static string GetProjectUsmpath(string projectPath)
