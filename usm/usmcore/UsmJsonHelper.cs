@@ -104,13 +104,19 @@ namespace usmcore
             return projectUsm;
         }
 
-        public static void ExtractPackage(string packagename, string projectbasedir, UsmJsonModel projectUsm)
+        public static void ExtractPackage(string packagename, string projectbasedir, UsmJsonModel projectUsm, Action<string> error = null)
         {
             packagename += ".zip";
-            var appPath = AppDomain.CurrentDomain.BaseDirectory;
             var skeletonFolderPath = GetSkeletonsFolderPath();
             var cb = Path.Combine(skeletonFolderPath, packagename);
-            ZipFile.ExtractToDirectory(cb, projectbasedir);
+            try
+            {
+                ZipFile.ExtractToDirectory(cb, projectbasedir);
+            }
+            catch (Exception ex)
+            {
+                error?.Invoke(ex.Message);
+            }
             ReadmeCreator.CreateReadme(projectbasedir, projectUsm.ProjectSettings);
         }
     }
