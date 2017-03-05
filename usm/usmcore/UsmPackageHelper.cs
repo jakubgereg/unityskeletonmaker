@@ -11,9 +11,11 @@ namespace usmcore
         /// <summary>
         /// Convert to package, addes .gitkeep files in empty directories
         /// </summary>
-        public static void ConvertToSkeleton(string dir, string mycustompackage)
+        public static void ConvertToSkeleton(string dir, string mycustompackage, Action<string> callback = null)
         {
-            Console.WriteLine($"Converting folder to skeleton {mycustompackage}");
+            callback?.Invoke($"Converting folder to skeleton {mycustompackage}");
+
+            Console.WriteLine();
             String[] alldirectories = Directory.GetDirectories(dir, "*.*", SearchOption.AllDirectories);
             foreach (var dire in alldirectories)
             {
@@ -22,22 +24,21 @@ namespace usmcore
 
                 //ignore all .git folders
                 if (info.FullName.Contains(".git")) continue;
-
-
                 var numberOfFilesInside = NumberOfFilesInDirectory(info.FullName);
                 //Console.WriteLine($"{info.Name}({numberOfFilesInside})");
 
                 if (numberOfFilesInside != 0) continue;
                 AddGitKeepFile(info.FullName);
 
-                Console.WriteLine($".gitkeep created for directory {info.Name}.");
+
+                callback?.Invoke($".gitkeep created for directory {info.Name}.");
             }
 
-            Console.WriteLine("All files prepared!");
+            callback?.Invoke("All files prepared!");
 
             CompressAllFiles(dir, mycustompackage);
 
-            Console.WriteLine($"Package {mycustompackage} created!");
+            callback?.Invoke($"Package {mycustompackage} created!");
         }
 
         private static int NumberOfFilesInDirectory(string dir)
