@@ -1,7 +1,5 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.IO;
-using System.IO.Compression;
 using usmcore;
 
 
@@ -29,6 +27,8 @@ namespace usm
                     CreatePackageOption();
                     break;
             }
+
+            Console.ReadKey();
         }
 
         static void CreateSkeletonOption()
@@ -44,11 +44,11 @@ namespace usm
                 return;
             }
 
-            var projectusmpath = GetProjectUsmPathFromBase(projectbasedir);
+            var projectusmpath = UsmJsonHelper.GetProjectUsmpath(projectbasedir);
 
             if (File.Exists(projectusmpath))
             {
-                var projusm = ReadProjectUsm(projectusmpath);
+                var projusm = UsmJsonHelper.ReadProjectUsm(projectusmpath);
                 var skeletons = UsmPackageHelper.GetAllSkeletonsAvailiable();
                 int i = 0;
                 Console.WriteLine("Availiable Packages:");
@@ -66,7 +66,7 @@ namespace usm
                 int numero = int.Parse(num);
                 var k = skeletons[numero - 1];
 
-                ExtractPackage(k.Name.Replace(".zip", ""), projectbasedir, projusm);
+                UsmJsonHelper.ExtractPackage(k.Name.Replace(".zip", ""), projectbasedir, projusm);
 
 
             }
@@ -97,8 +97,8 @@ namespace usm
 
                 if (File.Exists(projectusmpath))
                 {
-                    var projusm = ReadProjectUsm(projectusmpath);
-                    ExtractPackage("unityemptygame", projectbasedir, projusm);
+                    var projusm = UsmJsonHelper.ReadProjectUsm(projectusmpath);
+                    UsmJsonHelper.ExtractPackage("unityemptygame", projectbasedir, projusm);
 
                     Console.WriteLine();
                     Console.WriteLine("Thanks for using Unity Skeleton Maker!");
@@ -118,29 +118,14 @@ namespace usm
             var path = Console.ReadLine();
             Console.WriteLine("Name of your skeleton package ?");
             var name = Console.ReadLine();
-            UsmPackageHelper.ConvertToSkeleton(path, name);
+            UsmPackageHelper.ConvertToSkeleton(path, name, Message);
 
 
             Console.WriteLine("Thanks for using Unity Skeleton Maker!");
         }
 
-        static string GetProjectUsmPathFromBase(string projectbasedir)
-        {
-            return Path.Combine(projectbasedir, UsmJsonHelper.FileName);
-        }
 
-        static UsmJsonModel ReadProjectUsm(string projectusmpath)
-        {
-            var usmjsonraw = File.ReadAllText(projectusmpath);
-            var projectUsm = JsonConvert.DeserializeObject<UsmJsonModel>(usmjsonraw);
-            Console.WriteLine($"usm.json v{projectUsm.UsmJsonVersion} found!");
-
-
-            return projectUsm;
-
-        }
-
-        static void ExtractPackage(string packagename, string projectbasedir, UsmJsonModel projectUsm)
+        static void EXtract(string packagename, string projectbasedir, UsmJsonModel projectUsm)
         {
             //DO YOU WANT TO CREATE PROJ ,, AND SELECT PACKAGE
             Console.WriteLine("Do you want to create new project base on this settings?");
@@ -150,24 +135,23 @@ namespace usm
             Console.WriteLine("---------------");
             Console.WriteLine("[Y/N]?");
 
-            packagename = packagename + ".zip";
+
             ConsoleKeyInfo answer = Console.ReadKey();
             switch (answer.Key)
             {
                 case ConsoleKey.Y:
-                    var appPath = AppDomain.CurrentDomain.BaseDirectory;
-                    var mb = Path.Combine(appPath, "skeletons");
-                    var cb = Path.Combine(mb, packagename);
-                    ZipFile.ExtractToDirectory(cb, projectbasedir);
-                    ReadmeCreator.CreateReadme(projectbasedir, projectUsm.ProjectSettings);
+                    UsmJsonHelper.ExtractPackage(packagename, projectbasedir, projectUsm);
                     break;
 
                 default:
                     Environment.Exit(0);
                     break;
             }
+        }
 
-
+        static void Message(string m)
+        {
+            Console.WriteLine($"[S] - {m}");
         }
     }
 }

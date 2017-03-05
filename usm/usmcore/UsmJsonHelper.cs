@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 
 namespace usmcore
 {
@@ -19,6 +20,7 @@ namespace usmcore
 
         /*New usm.json*/
         private static string _usmJsonVersion = "0.1";
+
         public static void CreateNewEmptyUsm()
         {
             var author = new ProjectSettings.Author
@@ -65,6 +67,39 @@ namespace usmcore
             var appPath = AppDomain.CurrentDomain.BaseDirectory;
 
             return Path.Combine(appPath, DefaultSkeletonsFolderName);
+        }
+
+
+
+
+        /* Method used in project */
+
+        public static bool IsProjectUsmExists(string projectPath)
+        {
+            return File.Exists(GetProjectUsmpath(projectPath));
+        }
+
+        public static string GetProjectUsmpath(string projectPath)
+        {
+            return Path.Combine(projectPath, FileName);
+        }
+
+        public static UsmJsonModel ReadProjectUsm(string projectPath)
+        {
+            var projectusmpath = GetProjectUsmpath(projectPath);
+            var usmjsonraw = File.ReadAllText(projectusmpath);
+            var projectUsm = JsonConvert.DeserializeObject<UsmJsonModel>(usmjsonraw);
+            return projectUsm;
+        }
+
+        public static void ExtractPackage(string packagename, string projectbasedir, UsmJsonModel projectUsm)
+        {
+            packagename += ".zip";
+            var appPath = AppDomain.CurrentDomain.BaseDirectory;
+            var skeletonFolderPath = GetSkeletonsFolderPath();
+            var cb = Path.Combine(skeletonFolderPath, packagename);
+            ZipFile.ExtractToDirectory(cb, projectbasedir);
+            ReadmeCreator.CreateReadme(projectbasedir, projectUsm.ProjectSettings);
         }
     }
 }

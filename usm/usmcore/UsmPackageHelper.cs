@@ -15,8 +15,7 @@ namespace usmcore
         {
             callback?.Invoke($"Converting folder to skeleton {mycustompackage}");
 
-            Console.WriteLine();
-            String[] alldirectories = Directory.GetDirectories(dir, "*.*", SearchOption.AllDirectories);
+            var alldirectories = Directory.GetDirectories(dir, "*.*", SearchOption.AllDirectories);
             foreach (var dire in alldirectories)
             {
                 DirectoryInfo info = new DirectoryInfo(dire);
@@ -36,9 +35,7 @@ namespace usmcore
 
             callback?.Invoke("All files prepared!");
 
-            CompressAllFiles(dir, mycustompackage);
-
-            callback?.Invoke($"Package {mycustompackage} created!");
+            CompressAllFiles(dir, mycustompackage, callback);
         }
 
         private static int NumberOfFilesInDirectory(string dir)
@@ -50,16 +47,24 @@ namespace usmcore
 
         private static void AddGitKeepFile(string dirpath)
         {
-            File.Create(Path.Combine(dirpath, ".gitkeep"), 1);
+            File.Create(Path.Combine(dirpath, ".gitkeep"), 1).Close();
         }
 
-        private static void CompressAllFiles(string path, string mypackagename)
+        private static void CompressAllFiles(string path, string mypackagename, Action<string> callback = null)
         {
             var packageFileName = mypackagename + ".zip";
             var skeletonsDirectory = UsmJsonHelper.GetSkeletonsFolderPath();
             var newPath = Path.Combine(skeletonsDirectory, packageFileName);
 
-            ZipFile.CreateFromDirectory(path, newPath);
+            try
+            {
+                ZipFile.CreateFromDirectory(path, newPath);
+                callback?.Invoke($"Package {mypackagename} was created!");
+            }
+            catch (Exception ex)
+            {
+                callback?.Invoke(ex.Message);
+            }
         }
 
         public static List<FileInfo> GetAllSkeletonsAvailiable()
