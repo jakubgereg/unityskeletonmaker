@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("UnitySkeletonMaker")]
+[assembly: AssemblyTitle("usmcore")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Jakub Gereg")]
-[assembly: AssemblyProduct("usm")]
+[assembly: AssemblyProduct("usmcore")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("fec9e27b-7f9d-41e3-a4c0-1571914427f9")]
+[assembly: Guid("86556f7e-c22f-4a76-a16a-b4599f64cb7d")]
 
 // Version information for an assembly consists of the following four values:
 //

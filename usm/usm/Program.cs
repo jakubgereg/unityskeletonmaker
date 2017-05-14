@@ -1,122 +1,226 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.IO;
-using System.IO.Compression;
+using usmcore;
 
 
 namespace usm
 {
     class Program
     {
-        static bool again;
-        static void Main(string[] args)
+
+        static void Main()
         {
+            Console.BackgroundColor = ConsoleColor.DarkCyan;
+            Console.ForegroundColor = ConsoleColor.White;
+            CreateHeader();
+
+            ColoredConsoleWrite(ConsoleColor.White, "What do you want to do?\n");
+            ColoredConsoleWrite(ConsoleColor.Black, "-----------------------\n");
+            Console.Write("1. Create ");
+            ColoredConsoleWrite(ConsoleColor.Yellow, "Skeleton");
+            Console.Write(" from existing package [{0}]\n", UsmJsonHelper.UsmPackagefilesuffix);
+            Console.Write("2. Create ");
+            ColoredConsoleWrite(ConsoleColor.Green, "Package");
+            Console.Write(" from existing folder\n");
+
+            ConsoleKeyInfo selected = Console.ReadKey();
+
+            switch (selected.Key)
+            {
+                case ConsoleKey.D1:
+                    CreateSkeletonOption();
+                    break;
+
+                case ConsoleKey.D2:
+                    CreatePackageOption();
+                    break;
+                case ConsoleKey.X:
+                    var ps = UsmJsonHelper.ReadProjectUsm(AppDomain.CurrentDomain.BaseDirectory);
+                    ReadmeCreator.CreateReadme(AppDomain.CurrentDomain.BaseDirectory, ps.ProjectSettings, CallBackError);
+                    break;
+            }
+
+            ColoredConsoleWrite(ConsoleColor.Green, "\nThanks for using Unity Skeleton Maker!\t(press [R] to restart)");
+            ConsoleKeyInfo exit = Console.ReadKey();
+            switch (exit.Key)
+            {
+                case ConsoleKey.R:
+                    Main();
+                    break;
+            }
+        }
+
+        static void CreateSkeletonOption()
+        {
+            CreateHeader();
+
             Console.WriteLine("Select path to create skeleton [dest]:");
             var projectbasedir = Console.ReadLine();
 
-            if (!Directory.Exists(Path.Combine(projectbasedir, ".git")))
+            //check if project is git
+            if (!UsmJsonHelper.IsProjectGitRepo(projectbasedir))
             {
-                Console.WriteLine("Selected path must be GIT project directory! [Clone empty project]");
+                ColoredConsoleWrite(ConsoleColor.White,
+                    "Selected path must be GIT project directory!\nPlease create empty git repository and clone it to local folder.", ConsoleColor.Red);
                 Console.ReadKey();
                 return;
             }
 
-            var projectusmpath = GetProjectUsmPathFromBase(projectbasedir);
+            var projectusmpath = UsmJsonHelper.GetProjectUsmpath(projectbasedir);
 
-            if (File.Exists(projectusmpath))
+            //If usm.json exist try to create it
+            if (!UsmJsonHelper.IsProjectUsmExists(projectbasedir))
             {
-                var projusm = ReadProjectUsm(projectusmpath);
-                ExtractPackage("skeleton-unityemptygame", projectbasedir, projusm);
-
-                Console.WriteLine("Thanks for using Unity Skeleton Maker!");
-            }
-            else
-            {
-                Console.WriteLine($"Couldnt locate {projectusmpath} do you want to create {UsmJsonHelper.FileName} in this location? [Y/N]");
-                ConsoleKeyInfo answer = Console.ReadKey();
-                switch (answer.Key)
+                if (CreateNewUsmJsonOption(projectusmpath, projectbasedir))
                 {
-                    case ConsoleKey.Y:
-                        var defaultusmjsonpath = UsmJsonHelper.GetDefaultUsmpath();
-                        File.Copy(defaultusmjsonpath, projectusmpath);
-                        again = true;
-                        Console.ReadKey();
+                    CallBackMessage("Created usm.json file in project directory!\n");
+                    ColoredConsoleWrite(ConsoleColor.Black, $"Now you can modify settings of your project in {projectusmpath}\n", ConsoleColor.Green);
 
-                        break;
-
-                    default:
-                        Environment.Exit(0);
-                        break;
+                    Console.WriteLine("\nPress [enter] to continue!");
+                    Console.ReadKey();
                 }
             }
 
-            if (again)
+            //check if usm.json exist and extract skeleton
+            if (UsmJsonHelper.IsProjectUsmExists(projectbasedir))
             {
-                Console.Clear();
-                Console.WriteLine($"Now you can modify settings of your project in {projectusmpath}");
-                Console.ReadKey();
+                CreateHeader();
 
-                if (File.Exists(projectusmpath))
+                var skeletons = UsmPackageHelper.GetAllSkeletonsAvailiable();
+                int i = 0;
+                Console.WriteLine("Availiable skeleton packages:");
+                ColoredConsoleWrite(ConsoleColor.Black, "-----------------------------\n");
+
+                foreach (var skeleton in skeletons)
                 {
-                    var projusm = ReadProjectUsm(projectusmpath);
-                    ExtractPackage("skeleton-unityemptygame", projectbasedir, projusm);
-
-                    Console.WriteLine();
-                    Console.WriteLine("Thanks for using Unity Skeleton Maker!");
+                    i++;
+                    ConsoleColor bc = i % 2 == 0 ? ConsoleColor.Gray : ConsoleColor.Cyan;
+                    var str = MakeOneLine($"{i}." + skeleton.Name.Replace(UsmJsonHelper.UsmPackagefilesuffix, ""));
+                    ColoredConsoleWrite(ConsoleColor.Black, str + "\n", bc);
                 }
-                else
+
+                Console.Write("\nSelect package [number]:");
+                var num = Console.ReadLine();
+
+                if (string.IsNullOrEmpty(num)) return;
+
+                int numero = int.Parse(num);
+                if (numero == 0) return;
+
+                if (numero <= skeletons.Count)
                 {
-                    Environment.Exit(0);
+                    UsmJsonModel projusm = UsmJsonHelper.ReadProjectUsm(projectbasedir);
+                    FileInfo k = skeletons[numero - 1];
+                    ExtractOption(k.Name.Replace(UsmJsonHelper.UsmPackagefilesuffix, ""), projectbasedir, projusm);
                 }
             }
-            //ReadJSON
-
-            Console.ReadKey();
         }
 
-        static string GetProjectUsmPathFromBase(string projectbasedir)
+        static bool CreateNewUsmJsonOption(string projectusmpath, string projectbasedir)
         {
-            return Path.Combine(projectbasedir, UsmJsonHelper.FileName);
+            ColoredConsoleWrite(ConsoleColor.White, $"Couldn`t locate {projectusmpath}\n", ConsoleColor.Red);
+            Console.Write($"Do you want to create ");
+            ColoredConsoleWrite(ConsoleColor.Cyan, "(default) ");
+            Console.Write($"{UsmJsonHelper.FileName} in this location? [Y/N]:");
+            ConsoleKeyInfo answer = Console.ReadKey();
+            switch (answer.Key)
+            {
+                case ConsoleKey.Y:
+                    UsmJsonHelper.InitializeNewUsmJson(projectbasedir);
+                    return true;
+            }
+            return false;
         }
 
-        static UsmJsonModel ReadProjectUsm(string projectusmpath)
+        static void CreatePackageOption()
         {
-            var usmjsonraw = File.ReadAllText(projectusmpath);
-            var projectUsm = JsonConvert.DeserializeObject<UsmJsonModel>(usmjsonraw);
-            Console.WriteLine($"usm.json v{projectUsm.UsmJsonVersion} found!");
+            CreateHeader();
 
-
-            return projectUsm;
+            Console.Write("Select directory you want to convert to ");
+            ColoredConsoleWrite(ConsoleColor.Yellow, "skeleton");
+            Console.Write(":\n");
+            var path = Console.ReadLine();
+            Console.Write("Name of your skeleton ");
+            ColoredConsoleWrite(ConsoleColor.Green, "Package");
+            Console.Write(":");
+            var name = Console.ReadLine();
+            Console.WriteLine();
+            UsmPackageHelper.ConvertToSkeleton(path, name, CallBackMessage);
 
         }
 
-        static void ExtractPackage(string packagename, string projectbasedir, UsmJsonModel projectUsm)
+        static void ExtractOption(string packagename, string projectbasedir, UsmJsonModel projectUsm)
         {
+            CreateHeader();
             //DO YOU WANT TO CREATE PROJ ,, AND SELECT PACKAGE
-            Console.WriteLine("Do you want to create new project base on this settings?");
-            Console.WriteLine("---------------");
-            Console.WriteLine($"Game name: {projectUsm.ProjectSettings.GameName}");
-            Console.WriteLine($"Game name: {projectUsm.ProjectSettings.Description}");
-            Console.WriteLine("---------------");
-            Console.WriteLine("[Y/N]?");
+            Console.Write($"Do you want to extract package ");
+            ColoredConsoleWrite(ConsoleColor.Green, $"\"{packagename}\"");
+            Console.WriteLine(" to project based on this settings?");
+            ColoredConsoleWrite(ConsoleColor.Black, "----------------------------------------------------------------------\n");
+            ColoredConsoleWrite(ConsoleColor.Yellow, "Game name: ");
+            Console.WriteLine($"{projectUsm.ProjectSettings.GameName}");
+            ColoredConsoleWrite(ConsoleColor.Yellow, "Description: ");
+            Console.WriteLine($"{projectUsm.ProjectSettings.Description}");
+            ColoredConsoleWrite(ConsoleColor.Yellow, "Url: ");
+            Console.WriteLine($"{projectUsm.ProjectSettings.Url}");
+            ColoredConsoleWrite(ConsoleColor.Black, "----------------------------------------------------------------------\n");
+            Console.Write("[Y/N]:");
+
 
             ConsoleKeyInfo answer = Console.ReadKey();
             switch (answer.Key)
             {
                 case ConsoleKey.Y:
-                    var appPath = AppDomain.CurrentDomain.BaseDirectory;
-                    var cb = Path.Combine(appPath, packagename);
-                    var rb = Path.Combine(cb, "default.zip");
-                    ZipFile.ExtractToDirectory(rb, projectbasedir);
-                    ReadmeCreator.CreateReadme(projectbasedir, projectUsm.ProjectSettings);
-                    break;
-
-                default:
-                    Environment.Exit(0);
+                    UsmJsonHelper.ExtractPackage(packagename, projectbasedir, projectUsm, CallBackError);
                     break;
             }
+        }
 
+        static void CallBackError(string str)
+        {
+            ColoredConsoleWrite(ConsoleColor.White, $"\n[!] - {str}\n", ConsoleColor.Red);
+        }
 
+        static void CallBackMessage(string str)
+        {
+            ColoredConsoleWrite(ConsoleColor.Yellow, $"\n\n[$] - {str}\n");
+        }
+
+        public static string MakeOneLine(string text, bool centered = false)
+        {
+            string result = text;
+            int maxlenght = 80;
+
+            var textl = text.Length;
+
+            var emptyspaces = maxlenght - textl;
+
+            for (int i = 1; i < emptyspaces; i++)
+            {
+                result += " ";
+            }
+
+            return result;
+        }
+
+        public static void CreateHeader()
+        {
+            Console.Clear();
+            ColoredConsoleWrite(ConsoleColor.DarkRed,
+            "                      Unity Skeleton Maker by Jakub Gereg                       \n",
+            ConsoleColor.Yellow);
+        }
+
+        public static void ColoredConsoleWrite(ConsoleColor color, string text, ConsoleColor background = ConsoleColor.DarkCyan)
+        {
+            ConsoleColor originalColor = ConsoleColor.White;
+            ConsoleColor backgroundoriginalColor = ConsoleColor.DarkCyan;
+
+            Console.BackgroundColor = background;
+            Console.ForegroundColor = color;
+            Console.Write(text);
+            Console.ForegroundColor = originalColor;
+            Console.BackgroundColor = backgroundoriginalColor;
         }
     }
 }
