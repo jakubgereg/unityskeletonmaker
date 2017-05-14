@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using usmcore;
 
 
@@ -6,6 +7,7 @@ namespace usm
 {
     class Program
     {
+
         static void Main()
         {
             Console.BackgroundColor = ConsoleColor.DarkCyan;
@@ -16,7 +18,7 @@ namespace usm
             ColoredConsoleWrite(ConsoleColor.Black, "-----------------------\n");
             Console.Write("1. Create ");
             ColoredConsoleWrite(ConsoleColor.Yellow, "Skeleton");
-            Console.Write(" from existing package\n");
+            Console.Write(" from existing package [{0}]\n", UsmJsonHelper.UsmPackagefilesuffix);
             Console.Write("2. Create ");
             ColoredConsoleWrite(ConsoleColor.Green, "Package");
             Console.Write(" from existing folder\n");
@@ -59,7 +61,7 @@ namespace usm
             if (!UsmJsonHelper.IsProjectGitRepo(projectbasedir))
             {
                 ColoredConsoleWrite(ConsoleColor.White,
-                    "Selected path must be GIT project directory! [Clone empty project]", ConsoleColor.Red);
+                    "Selected path must be GIT project directory!\nPlease create empty git repository and clone it to local folder.", ConsoleColor.Red);
                 Console.ReadKey();
                 return;
             }
@@ -71,7 +73,7 @@ namespace usm
             {
                 if (CreateNewUsmJsonOption(projectusmpath, projectbasedir))
                 {
-                    CallBackMessage("\n\nCreated usm.json file in project directory!\n");
+                    CallBackMessage("Created usm.json file in project directory!\n");
                     ColoredConsoleWrite(ConsoleColor.Black, $"Now you can modify settings of your project in {projectusmpath}\n", ConsoleColor.Green);
 
                     Console.WriteLine("\nPress [enter] to continue!");
@@ -93,24 +95,23 @@ namespace usm
                 {
                     i++;
                     ConsoleColor bc = i % 2 == 0 ? ConsoleColor.Gray : ConsoleColor.Cyan;
-                    var str = MakeOneLine($"{i}." + skeleton.Name.Replace(".zip", ""));
+                    var str = MakeOneLine($"{i}." + skeleton.Name.Replace(UsmJsonHelper.UsmPackagefilesuffix, ""));
                     ColoredConsoleWrite(ConsoleColor.Black, str + "\n", bc);
                 }
 
                 Console.Write("\nSelect package [number]:");
                 var num = Console.ReadLine();
 
-                if (num != null)
-                {
-                    int numero = int.Parse(num);
-                    if (numero == 0) return;
+                if (string.IsNullOrEmpty(num)) return;
 
-                    if (numero <= skeletons.Count)
-                    {
-                        UsmJsonModel projusm = UsmJsonHelper.ReadProjectUsm(projectbasedir);
-                        var k = skeletons[numero - 1];
-                        ExtractOption(k.Name.Replace(".zip", ""), projectbasedir, projusm);
-                    }
+                int numero = int.Parse(num);
+                if (numero == 0) return;
+
+                if (numero <= skeletons.Count)
+                {
+                    UsmJsonModel projusm = UsmJsonHelper.ReadProjectUsm(projectbasedir);
+                    FileInfo k = skeletons[numero - 1];
+                    ExtractOption(k.Name.Replace(UsmJsonHelper.UsmPackagefilesuffix, ""), projectbasedir, projusm);
                 }
             }
         }
@@ -154,7 +155,7 @@ namespace usm
             //DO YOU WANT TO CREATE PROJ ,, AND SELECT PACKAGE
             Console.Write($"Do you want to extract package ");
             ColoredConsoleWrite(ConsoleColor.Green, $"\"{packagename}\"");
-            Console.WriteLine(" to project base on this settings?");
+            Console.WriteLine(" to project based on this settings?");
             ColoredConsoleWrite(ConsoleColor.Black, "----------------------------------------------------------------------\n");
             ColoredConsoleWrite(ConsoleColor.Yellow, "Game name: ");
             Console.WriteLine($"{projectUsm.ProjectSettings.GameName}");
@@ -182,7 +183,7 @@ namespace usm
 
         static void CallBackMessage(string str)
         {
-            ColoredConsoleWrite(ConsoleColor.Yellow, $"[$] - {str}\n");
+            ColoredConsoleWrite(ConsoleColor.Yellow, $"\n\n[$] - {str}\n");
         }
 
         public static string MakeOneLine(string text, bool centered = false)

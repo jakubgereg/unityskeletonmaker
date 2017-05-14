@@ -62,10 +62,10 @@
     <None Include="default-usm-json\usm.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="packages.config" />
-    <None Include="skeletons\unityemptygame.zip">
+    <None Include="my_usm_packages\unityemptygame1.usmpackage">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="usm_ico.ico" />

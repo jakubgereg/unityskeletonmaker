@@ -52,7 +52,7 @@ namespace usmcore
 
         private static void CompressAllFiles(string path, string mypackagename, Action<string> callback = null)
         {
-            var packageFileName = mypackagename + ".zip";
+            var packageFileName = mypackagename + UsmJsonHelper.UsmPackagefilesuffix;
             var skeletonsDirectory = UsmJsonHelper.GetSkeletonsFolderPath();
             var newPath = Path.Combine(skeletonsDirectory, packageFileName);
 
