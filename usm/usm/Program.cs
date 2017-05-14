@@ -32,6 +32,10 @@ namespace usm
                 case ConsoleKey.D2:
                     CreatePackageOption();
                     break;
+                case ConsoleKey.X:
+                    var ps = UsmJsonHelper.ReadProjectUsm(AppDomain.CurrentDomain.BaseDirectory);
+                    ReadmeCreator.CreateReadme(AppDomain.CurrentDomain.BaseDirectory, ps.ProjectSettings, CallBackError);
+                    break;
             }
 
             ColoredConsoleWrite(ConsoleColor.Green, "\nThanks for using Unity Skeleton Maker!\t(press [R] to restart)");
